@@ -1,0 +1,120 @@
+VPC
+
+1)create a vpc 
+- enable dns hostname for vps (20.0.0.0/16)
+- create subnets & enable auto assign (3,20.0.0.0/24 ,20.0.1.0/24....)
+- create routing table and assign igw and subnets to it 
+- create a security group and allow traffic (for test deploy instance)
+
+
+
+2)NAT Gateway: connect to the Internet from instances within a private 
+- create vpc with 1subnet attached with igw & add subnets to it. create sg , deploy instance called 'A' (public)
+- create new subnet 
+  = create nat gateway & select public subnet
+  = create rout & add nat subnet , create route to nat gateway (for traffic)
+  = deploy instance called 'B' (pravet)
+  = to connect to B vm -> log in to vm A -> create a file and copy pem file you used to create vm (ex:san.pem)-> chmod u+x san.pem
+    -> ssh -i san.pem ec2-user@ 'give B pravet ip' 
+  = to test b connected to internet $ ping 8.8.8.8
+
+
+
+3)VPC Peering
+
+ Rules for creating peering   
+- VPC which are participating in peering should have uniqe range of ip address
+- vpc dont work in transit
+
+ Types of Peering
+1. intra vpc peering (for same region)
+2. inter vpc peering (for differentiate region)
+note: after creating peering edit route in two route tables(add route-> give ip  target:peering connection)
+
+
+
+4)VPC Endpoints
+- if we have 1 public and 1 private instances .if private whant to connect with s3 we use endpoints (public can connect by internet)
+  =  create iam role for ec2 to axess s3 
+    - create public & private instances with s3 iam role
+    - create vpc endpoint -> select s3 service & select route -> create -> select your endpoint -> actions:manage route tables-> modify route
+    - for test login to public vm and $ aws s3 (it is by internet)
+      - login to privet $ aws s3 (it is by endpoint )
+
+
+
+
+5) Creating VPN Connection
+- create a vpc  ->  create one  public and one private subnet
+- launch 2 ec2 instance  -  one with public sub and one with private sub (in security group give all ICMP)
+- launch openvpn AMI  deploy in public sub (in security group give all ICM)  ->  connect with it ->
+  user name : openvpnas
+  -> copy client url
+$ sudo passwd openvpn  (seting up passwd)
+
+-> google -> paste client url -> advanced -> proceed to ....(unsafe) -> username:openvpn , pass:giveyour pass -> sign in
+   -> download (as per your os) -> install it -> go to openvpn in your system -> connect with user name and pass
+
+-> go to your private instances  -> copy ip -> connect putty 
+
+-> in openvpn we will get ADMIN URL als we can use it for creating users
+
+
+
+
+6)  Transit Gateway
+-> create 2 vpc (ex: vpc1 ,vpc2) in same region  ->  deploy 2 instances using 2 vpc's  -> login to instances and try to ping private ip to ec2-1 to ec2-2 (you cant connect)
+   -> vpc -> transit gateways -> create transit gateway (create it) -> copy the transit gateway ID -> 
+      -> vpc -> transit gateway attachments -> create transit gateway attachment -> (attach your 2 instances to it one after one)
+-> ec2 -> go to route tables -> edit route in 2 instances 
+-> now you can ping with in 2 instance 
+
+
+
+
+7) Setup VPC Flow Logs To S3
+ -> aws -> vpc -> select your vpc -> flow logs -> crate flow log for s3 -> give filter,destination,s3 name as per ex -> create
+
+8) VPC Flow Logs To CloudWatch Log Group
+-> cloudwatch -> logs -> actions -> create log group -> give name
+-> iam -> select ec2 -> create role without any permissions (give in custam policy to it and trust relationship)
+
+-> aws -> vpc -> select your vpc -> flow logs -> create flow logs by cloudwatch -> give filter , destination as you crated , iam role -> create
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
